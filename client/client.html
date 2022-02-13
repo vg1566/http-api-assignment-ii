@@ -12,6 +12,13 @@
         case 200:
           content.innerHTML = `<b>Success</b>`;
           break;
+        case 201:
+          content.innerHTML = `<b>Created</b>`;
+          break;
+        case 204:
+          parseResponse = false;
+          content.innerHTML = `<b>Updated (No Content)</b>`;
+          break;
         case 400:
           content.innerHTML = `<b>Bad Request</b>`;
           break;
@@ -27,25 +34,39 @@
       {
         const resObj = await response.json();
         console.log(resObj);
-        switch(response.status) {
-          case 200:
-            content.innerHTML += `<p>${JSON.stringify(resObj.content)}</p>`;
-            break;
-          default:
-            content.innerHTML += `<p>Message: ${resObj.message}</p>`;
-            break;
-        }
+        if(resObj.users) content.innerHTML += `<p>${JSON.stringify(resObj.users)}</p>`;
+        if(resObj.message) content.innerHTML += `<p>Message: ${resObj.message}</p>`;
       }
     };
 
     const sendFetchRequest = (url, requestedMethod) => {
       const options = {
-        method: requestedMethod//,
-        //headers: {'Accept': acceptedType},
+        method: requestedMethod
       }
       let fetchPromise = fetch(url, options);
 
-      fetchPromise.then((response) => { handleResponse(response, requestedMethod === 'get') });
+      fetchPromise.then((response) => { handleResponse(response, requestedMethod !== 'head') });
+    };
+
+    const sendPost = async (nameForm) => {
+      const nameAction = nameForm.getAttribute('action');
+      const nameMethod = nameForm.getAttribute('method');
+      
+      const nameField = nameForm.querySelector('#nameField');
+      const ageField = nameForm.querySelector('#ageField');
+
+      const formData = `name=${nameField.value}&age=${ageField.value}`;
+
+      let response = await fetch(nameAction, {
+        method: nameMethod,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json',
+        },
+        body: formData,
+      });
+
+      handleResponse(response, nameMethod);
     };
 
     const init = () => {
@@ -53,8 +74,15 @@
       const urlField = document.querySelector("#urlField");
       const methodSelect = document.querySelector("#methodSelect");
 
+      const nameForm = document.querySelector("#nameForm");
+
       userForm.onsubmit = () => {
         sendFetchRequest(urlField.value, methodSelect.value);
+        return false;
+      };
+      
+      nameForm.onsubmit = () => {
+        sendPost(nameForm);
         return false;
       };
     };
@@ -65,7 +93,7 @@
 <body>
   <section id="top">
     <h3>POST Status Code Tests</h3>
-    <form id="nameForm">
+    <form id="nameForm" action="/addUser" method="post">
       <label for="name">Name: </label>
       <input id="nameField" type="text" name="name" />
       <label for="age">Age: </label>

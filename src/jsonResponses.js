@@ -1,4 +1,4 @@
-let users = {};
+const users = {};
 
 // responds with json obj (GET)
 const respondJSON = (request, response, status, object) => {
@@ -22,15 +22,37 @@ const respondJSONMeta = (request, response, status) => {
 };
 
 const getUsers = (request, response) => {
-  let content = users;
   const responseJSON = {
-    content,
+    users,
   };
 
   return respondJSON(request, response, 200, responseJSON);
 };
 
 const getUsersMeta = (request, response) => respondJSONMeta(request, response, 200);
+
+const addUser = (request, response, data) => {
+  let responseJSON;
+  // invalid data
+  if (!data.name || !data.age) {
+    responseJSON = {
+      message: 'Name and age are both required.',
+      id: 'addUserMissingParams',
+    };
+    return respondJSON(request, response, 400, responseJSON);
+  }
+  // update existing user
+  if (users[data.name]) {
+    users[data.name].age = data.age;
+    return respondJSONMeta(request, response, 204);
+  }
+  // create new user
+  users[data.name] = { name: data.name, age: data.age };
+  responseJSON = {
+    message: 'Created Successfully.',
+  };
+  return respondJSON(request, response, 201, responseJSON);
+};
 
 const notFound = (request, response) => {
   const responseJSON = {
@@ -40,13 +62,12 @@ const notFound = (request, response) => {
   return respondJSON(request, response, 404, responseJSON);
 };
 
-const notFoundMeta = (request, response) => {
-  return respondJSONMeta(request, response, 404);
-};
+const notFoundMeta = (request, response) => respondJSONMeta(request, response, 404);
 
 module.exports = {
   getUsers,
   getUsersMeta,
+  addUser,
   notFound,
   notFoundMeta,
 };
