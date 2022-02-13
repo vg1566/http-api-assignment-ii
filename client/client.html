@@ -54,7 +54,7 @@
       
       const nameField = nameForm.querySelector('#nameField');
       const ageField = nameForm.querySelector('#ageField');
-
+      // compile form data to put in body
       const formData = `name=${nameField.value}&age=${ageField.value}`;
 
       let response = await fetch(nameAction, {

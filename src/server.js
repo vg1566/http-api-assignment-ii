@@ -26,6 +26,8 @@ const parseBody = (request, response, handler) => {
   });
 };
 
+// parse body with addUser function as a handler
+// separated for potential reuse of parseBody function
 const handlePost = (request, response) => {
   parseBody(request, response, jsonHandler.addUser);
 };
